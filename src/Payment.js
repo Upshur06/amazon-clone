@@ -20,7 +20,11 @@ function Payment() {
 
   useEffect(() => {
       const getClientSecret = async () => {
-        const response = await axios;
+        const response = await axios({
+            method: 'post',
+            url: `/payments/create?total=${getBasketTotal(basket) * 100}`
+        });
+            setClientSecret(response.data.clientSecret)
       }
 
       getClientSecret();
@@ -32,8 +36,18 @@ function Payment() {
     setProcessing(true);
 
 
+    const payload = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+            card: elements.getElement(CardElement)
+        }
+    }).then(({ paymentIntent }) => {
+        set.Succeeded(true);
+        setError(null);
+        setProcessing(false);
 
-    // const payload = await stripe 
+        history.replace('/order');
+    })
+
   };
 
   const handleChange = (event) => {
