@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Payment.css";
 import { useStateValue } from "./StateProvider";
 import CheckoutProduct from "./CheckoutProduct";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import CurrencyFormat from "react-currency-format";
 import { getBasketTotal } from "./reducer";
+import axios from "./axios";
 
 function Payment() {
   const [{ basket, user }, dispatch] = useStateValue();
+  const history = useHistory();
   const stripe = useStripe();
   const elements = useElements();
 
@@ -16,38 +18,44 @@ function Payment() {
   const [processing, setProcessing] = useState("");
   const [error, setError] = useState(null);
   const [disabled, setDisabled] = useState(true);
-  const [clientSecret, setclientSecret] = useState(true);
+  const [clientSecret, setClientSecret] = useState(true);
 
   useEffect(() => {
-      const getClientSecret = async () => {
-        const response = await axios({
-            method: 'post',
-            url: `/payments/create?total=${getBasketTotal(basket) * 100}`
-        });
-            setClientSecret(response.data.clientSecret)
-      }
+    const getClientSecret = async () => {
+      const response = await axios({
+        method: "post",
+        url: `/payments/create?total=${getBasketTotal(basket) * 100}`,
+      });
+      setClientSecret(response.data.clientSecret);
+    }
 
-      getClientSecret();
-  }, [basket])
+    getClientSecret();
+  }, [basket]);
+
+    console.log('THE SECRET IS  >>> ', clientSecret)
 
   const handleSubmit = async (event) => {
     // do all the fancey stripe stuff...
     event.preventDefault();
     setProcessing(true);
 
-
-    const payload = await stripe.confirmCardPayment(clientSecret, {
+    const payload = await stripe
+      .confirmCardPayment(clientSecret, {
         payment_method: {
-            card: elements.getElement(CardElement)
-        }
-    }).then(({ paymentIntent }) => {
-        set.Succeeded(true);
+          card: elements.getElement(CardElement),
+        },
+      })
+      .then(({ paymentIntent }) => {
+        setSucceeded(true);
         setError(null);
         setProcessing(false);
 
-        history.replace('/order');
-    })
+        dispatch({
+            type: "EMPTY_BASKET"
+        })
 
+        history.replace("/order");
+      });
   };
 
   const handleChange = (event) => {
@@ -59,7 +67,7 @@ function Payment() {
     <div className="payment">
       <div className="payment__container">
         <h1>
-          Checkout (<Link to="/checkout">{basket?.length}</Link>)
+          Checkout (<Link to="/checkout">{basket?.length} items</Link>) 
         </h1>
         {/* Payment section - delivery address */}
         <div className="payment__section">
