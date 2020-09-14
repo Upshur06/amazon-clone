@@ -1,7 +1,9 @@
 const functions = require("firebase-functions");
 const express = require("express");
 const cors = require("cors");
-const stripe = require("stripe")("");
+const stripe = require("stripe")(
+  ""
+);
 
 // API
 
@@ -29,3 +31,5 @@ app.post("/payments/create", async (request, response) => {
 
 // - Listen command
 exports.api = functions.https.onRequest(app);
+
+// http://localhost:5001/challenge-8287f/us-central1/api
