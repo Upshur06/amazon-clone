@@ -12,9 +12,8 @@ import { useStateValue } from "./StateProvider";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
-const promise = loadStripe(
-  ""
-);
+const promise = process.env.REACT_APP_SECRET_KEY;
+
 
 function App() {
   const [{}, dispatch] = useStateValue();
